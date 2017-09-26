@@ -16,7 +16,7 @@ public class REUtils {
      * @return the stdout of dd
      */
     public static String readLib(String libName, int decimalOffset, int count) {
-        return execShellCmd("dd if=" + libName + " skip=" + decimalOffset + " bs=1 count=" + count);
+        return execLocalShellCmd("dd if=" + libName + " skip=" + decimalOffset + " bs=1 count=" + count);
     }
 
     /**
@@ -32,10 +32,21 @@ public class REUtils {
             FileOutputStream fos = new FileOutputStream("tmp");
             fos.write(payload);
             fos.close();
-            return execShellCmd("dd if=tmp of=" + libName + " seek=" + decimalOffset + " obs=1 conv=notrunc");
+            return execLocalShellCmd("dd if=tmp of=" + libName + " seek=" + decimalOffset + " obs=1 conv=notrunc");
         } catch (IOException e) {
             return "";
         }
+    }
+
+    /**
+     * Exec a shell cmd on the remote android device using adb
+     *
+     * @param cmd the cmd
+     * @param root whether if the command as to be run as root
+     * @return the stdout of the command
+     */
+    public static String execRemoteShellCmd(String cmd, boolean root) {
+        return execLocalShellCmd("adb shell " + (root ? "su -c " : "") + cmd);
     }
 
     /**
@@ -44,7 +55,7 @@ public class REUtils {
      * @param cmd the command to execute
      * @return the std out with the result or error
      */
-    public static String execShellCmd(String cmd) {
+    public static String execLocalShellCmd(String cmd) {
         StringBuilder output = new StringBuilder();
         Process process;
         try {
@@ -75,9 +86,9 @@ public class REUtils {
      * @return whether if the pull was successful
      */
     public static boolean pullLib(String targetPackage, String libName) {
-        String result = execShellCmd("adb shell su -c cp /data/data/" + targetPackage + "/lib/" + libName + " /sdcard/");
+        String result = execLocalShellCmd("adb shell su -c cp /data/data/" + targetPackage + "/lib/" + libName + " /sdcard/");
         if (result.isEmpty()) {
-            execShellCmd("adb pull /sdcard/" + libName);
+            execLocalShellCmd("adb pull /sdcard/" + libName);
             return true;
         }
 
@@ -92,9 +103,9 @@ public class REUtils {
      * @return whether if the push was successful
      */
     public static boolean pushLib(String targetPackage, String libName) {
-        String result = execShellCmd("adb push " + libName + " /sdcard/");
+        String result = execLocalShellCmd("adb push " + libName + " /sdcard/");
         if (result.trim().replace("\n", "").endsWith(libName)) {
-            execShellCmd("adb shell su -c cp /sdcard/" + libName + " /data/data/" + targetPackage + "/lib/" + libName);
+            execLocalShellCmd("adb shell su -c cp /sdcard/" + libName + " /data/data/" + targetPackage + "/lib/" + libName);
             return true;
         }
 
