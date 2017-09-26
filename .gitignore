@@ -13,7 +13,6 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 *.zip
@@ -76,4 +75,3 @@ fabric.properties
 .gitignore
 .idea/
 REUtils.iml
-src/
